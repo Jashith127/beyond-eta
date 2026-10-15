@@ -1,0 +1,31 @@
+.issue-record{margin-top:15px;padding:11px 16px;border:1px solid #b2975e;background:#c4ab72;color:#1b2216;font-size:12px;border-radius:3px}
+.receipt-panel{max-width:450px;margin:35px auto 10px;padding:0 20px 15px;scroll-margin-top:20px}
+.receipt{background:#f6f3e9;color:#181b16;position:relative;padding:29px 27px 35px;box-shadow:0 15px 35px #0006;font:14px/1.65 'Courier New',monospace;border-top:6px solid #b1ae9f}
+.receipt:after{content:'';position:absolute;left:0;right:0;bottom:-7px;height:8px;background:linear-gradient(135deg,#f6f3e9 25%,transparent 25%) -8px 0/16px 16px,linear-gradient(225deg,#f6f3e9 25%,transparent 25%) -8px 0/16px 16px}
+.receipt h2{font:bold 24px 'Courier New',monospace;letter-spacing:1px;margin:0 0 5px}
+.receipt-subtitle{font-size:12px;margin:0 0 20px}.receipt-intro{font-size:14px}
+.receipt hr{border:0;border-top:1px dashed #6c7066;margin:21px 0}
+.receipt h3{font:bold 13px 'Courier New',monospace;letter-spacing:.5px;margin:23px 0 10px}
+.receipt p{margin:12px 0}.receipt dl{margin:12px 0}
+.receipt dl>div{display:flex;justify-content:space-between;gap:14px;margin:7px 0}
+.receipt dt,.receipt dd{margin:0}.receipt dd{font-weight:bold;white-space:nowrap}
+.receipt .receipt-total{font-size:18px;border-top:1px solid #b7b9a8;padding-top:11px;margin-top:12px;line-height:1.4}
+.receipt-note{font-size:12px;line-height:1.6}.receipt-selected{font-size:12px;border-left:2px solid #747c68;padding-left:10px}
+.receipt-statement{font-weight:bold;font-size:16px;line-height:1.5}
+.receipt-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding-top:26px}
+.receipt-actions button,.receipt-actions a{font:11px Arial,sans-serif;border:1px solid #717b62;background:#283022;color:#e5eadb;text-decoration:none;padding:11px 13px;border-radius:3px}
+.receipt-actions>*:first-child{background:#c7b17d;border-color:#c7b17d;color:#252b20}
+@media(max-width:760px){.receipt-panel{padding-left:0;padding-right:0;margin-top:20px}.receipt{padding:25px 20px 30px;font-size:13px}.receipt .receipt-total{font-size:17px}}
+@media print{
+ @page{size:80mm 250mm;margin:4mm}
+ body,main{margin:0!important;padding:0!important;max-width:none!important;display:block!important;background:#fff!important;color:#000!important}
+ header,footer,.exhibit,.story-caption,.mobile-actions,.receipt-actions,dialog{display:none!important}
+ #receipt-panel{display:block!important;max-width:none!important;margin:0!important;padding:0!important}
+ #receipt-panel[hidden]{display:none!important}
+ .receipt{width:72mm;box-shadow:none;border:0;background:white;color:black;font-size:10pt;line-height:1.5;padding:3mm 2mm 5mm}
+ .receipt:after{display:none}.receipt h2{font-size:16pt}
+ .receipt-subtitle,.receipt h3,.receipt-note,.receipt-selected{font-size:9pt}
+ .receipt .receipt-total,.receipt-statement{font-size:12pt}
+ .receipt hr{margin:4mm 0}.receipt h3{margin:4mm 0 2mm}
+ .receipt dl>div{break-inside:avoid}.receipt p{margin:3mm 0}
+}

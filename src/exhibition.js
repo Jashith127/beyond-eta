@@ -1,0 +1,78 @@
+import './exhibition.css';
+import './exhibition-compact.css';
+import './receipt-paper.css';
+import {ExposureStory,SCENES} from './exposure-story.js';
+import {drawDisplay} from './segments.js';
+import {icon} from './icons.js';
+const $=id=>document.getElementById(id);
+const story=new ExposureStory();
+const time=n=>`${String(n).padStart(2,'0')}:00`;
+const records=[['restaurant','FOOD WAIT'],['rain','RAIN'],['traffic','TRAFFIC'],['hazard','SAFETY STOP']];
+records.forEach(([type,label],i)=>{const item=document.createElement('div');item.className='record';item.innerHTML=`${icon(type)}<span>${label}</span><strong id="record-${i}">—</strong>`;$('record-bank').append(item);});
+SCENES.forEach((scene,i)=>{const step=document.createElement('span');step.className='chapter-mark';step.setAttribute('aria-label',scene.name);$('chapters').append(step);});
+function render(){
+ const scene=story.scene;
+ document.body.dataset.scene=scene.event;
+ document.body.classList.toggle('is-exposed',story.exposed);
+ document.body.classList.toggle('is-finished',story.finished);
+ $('scene-count').textContent=`${String(story.index+1).padStart(2,'0')} / 07`;
+ $('scene-name').textContent=scene.name;
+ $('story-title').textContent=scene.title;
+ $('story-line').textContent=scene.line;
+ $('meter-icon').innerHTML=icon(scene.event);
+ $('meter-mode').textContent=story.finished?'JOURNEY RETAINED':story.index===0?'READY':scene.name.toUpperCase();
+ $('meter-label').textContent=story.index===0?'LIVED TIME':story.finished?'TOTAL WORKING TIME':scene.event==='ride'?'TRAVELLING TIME':scene.event==='restaurant'?'WAITING FOR FOOD':`TIME IN ${scene.event==='hazard'?'SAFETY STOP':scene.event.toUpperCase()}`;
+ drawDisplay($('meter-value'),time(scene.value));
+ $('meter-value').setAttribute('aria-label',`${$('meter-label').textContent.toLowerCase()} ${time(scene.value)}`);
+ $('elapsed').textContent=time(scene.elapsed);$('travel').textContent=time(scene.travel);$('stopped').textContent=time(scene.stopped);
+ scene.records.forEach((value,i)=>{const row=$(`record-${i}`);row.textContent=value?time(value):'—';row.closest('.record').classList.toggle('recorded',value>0);});
+ $('begin').disabled=story.index!==0;
+ $('next').disabled=story.index===0||!story.canNext;
+ $('mobile-next').disabled=story.index===0||!story.canNext;
+ $('mobile-next').textContent=story.finished?'Replay':'Next';
+ $('next').textContent=story.finished?'REPLAY':'NEXT';
+ $('expose').textContent=story.exposed?'CONCEAL':'EXPOSE';
+ $('expose').setAttribute('aria-pressed',String(story.exposed));
+ $('mobile-expose').textContent=story.exposed?'Conceal':'Expose';
+ $('mobile-expose').setAttribute('aria-pressed',String(story.exposed));
+ $('expose').classList.toggle('attention',story.index===3&&!story.hasExposedRain);
+ $('phone-eta').textContent=story.finished?'26':String(scene.eta);
+ $('phone-unit').textContent=story.finished?'minutes taken':'minute estimate';
+ $('phone-status').textContent=story.index===0?'Before you order':story.finished?'Delivered':story.index===1?'Rider assigned':story.index===2?'Preparing your food':'Your order is on its way';
+ $('phone-message').textContent=story.index===0?'One delivery. One arrival estimate.':story.finished?'The estimate changed. The journey happened.':scene.eta===20?'Your estimated arrival is unchanged.':`Your estimate has been updated to ${scene.eta} minutes.`;
+ $('first-eta').textContent='20 min';$('latest-eta').textContent=`${scene.eta} min`;
+ $('phone-order').hidden=story.index!==0;
+ $('judgement').hidden=!story.finished;
+ $('issue-record').hidden=!story.finished;
+ if(!story.finished)$('receipt-panel').hidden=true;
+ $('baseline-switch').hidden=!story.finished;
+ $('verdict').textContent=story.lateness?'6 MIN LATE':'ON TIME';
+ $('verdict').dataset.late=String(story.lateness>0);
+ $('verdict-caption').textContent=story.baseline==='latest'?'against the revised 26-minute estimate':'against the original 20-minute estimate';
+ $('original').setAttribute('aria-pressed',String(story.baseline==='original'));$('latest').setAttribute('aria-pressed',String(story.baseline==='latest'));
+ $('model-input').textContent=scene.input;$('model-decision').textContent=scene.decision;$('model-outside').textContent=scene.outside;
+ $('customer-surface').hidden=story.exposed;$('model-surface').hidden=!story.exposed;
+ $('model-action').textContent=story.finished?'The evaluation rule chooses the verdict.':'A person’s experience becomes an arrival adjustment.';
+ $('next-action').textContent=story.index===3&&!story.hasExposedRain?'Press EXPOSE on the meter.':story.index===0?'Press START on the meter, or place the order.':story.finished?'Compare the two judgements, then issue the receipt.':`Press NEXT: ${scene.action.toLowerCase()}.`;
+ $('connector-text').textContent=story.exposed?'THE TRANSLATION IS VISIBLE':'ONE JOURNEY';
+ [...$('chapters').children].forEach((mark,i)=>{mark.classList.toggle('passed',i<story.index);mark.classList.toggle('current',i===story.index);});
+}
+function advance(){story.next();render();}
+$('begin').addEventListener('click',advance);$('phone-order').addEventListener('click',advance);$('next').addEventListener('click',advance);
+$('expose').addEventListener('click',()=>{story.reveal();render();});
+$('mobile-next').addEventListener('click',advance);
+$('mobile-expose').addEventListener('click',()=>{story.reveal();render();});
+$('reset').addEventListener('click',()=>{story.reset();render();});
+$('original').addEventListener('click',()=>{story.baseline='original';render();});$('latest').addEventListener('click',()=>{story.baseline='latest';render();});
+$('about').addEventListener('click',()=>$('about-dialog').showModal());$('close-about').addEventListener('click',()=>$('about-dialog').close());
+$('about-dialog').addEventListener('click',event=>{if(event.target===$('about-dialog')){const r=$('about-dialog').getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)$('about-dialog').close();}});
+function receiptPNG(){
+ const lines=[['BEYOND ETA',46],['JOURNEY RECORD / #001',26],['',20],['One delivery. More than one account.',26],['-----------------------------------------',25],['FIRST ESTIMATE                     20 min',27],['REVISED ESTIMATE                   26 min',27],['ACTUAL JOURNEY                     26 min',32],['-----------------------------------------',25],['THE JUDGEMENT',29],['Against revised estimate: ON TIME',27],['Against first estimate: 6 MINUTES LATE',27],['',12],[`Viewer selected: ${story.baseline==='original'?'first estimate':'revised estimate'}`,25],['-----------------------------------------',25],['THE WORK',29],['Riding                            20 min',27],['Waiting for food                   4 min',27],['Safety stop                        2 min',27],['',12],['THE ENCOUNTERS',29],['In rain                            6 min',27],['In traffic                         6 min',27],['',12],['Rain and traffic overlap riding time.',24],['They are not extra minutes.',24],['-----------------------------------------',25],['The judgement changed.',30],['The journey did not.',30],['',12],['Scripted artwork. Illustrative model.',23],['No pay, penalties or sensors involved.',23]];
+ const canvas=document.createElement('canvas');canvas.width=900;canvas.height=lines.reduce((sum,[,size])=>sum+size*1.7,100);const ctx=canvas.getContext('2d');ctx.fillStyle='#f6f3e9';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#171917';let y=56;
+ for(const [text,size] of lines){ctx.font=`${size>=29?'bold ':''}${size}px "Courier New",monospace`;ctx.textBaseline='top';ctx.fillText(text,50,y);y+=size*1.7;}
+ return canvas.toDataURL('image/png');
+}
+$('issue-record').addEventListener('click',()=>{if(!story.finished)return;$('receipt-selected').textContent=`Viewer selected: ${story.baseline==='original'?'first estimate':'revised estimate'}.`;$('receipt-download').href=receiptPNG();$('receipt-panel').hidden=false;$('receipt-panel').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});});
+$('receipt-print').addEventListener('click',()=>window.print());
+$('receipt-close').addEventListener('click',()=>{$('receipt-panel').hidden=true;document.querySelector('.story-caption').scrollIntoView({block:'center'});$('issue-record').focus();});
+render();
