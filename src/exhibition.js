@@ -4,6 +4,7 @@ import './receipt-paper.css';
 import {ExposureStory,SCENES} from './exposure-story.js';
 import {drawDisplay} from './segments.js';
 import {icon} from './icons.js';
+import {receiptHTML,receiptPNG,receiptPDF} from './receipt.js';
 const $=id=>document.getElementById(id);
 const story=new ExposureStory();
 const time=n=>`${String(n).padStart(2,'0')}:00`;
@@ -66,13 +67,22 @@ $('reset').addEventListener('click',()=>{story.reset();render();});
 $('original').addEventListener('click',()=>{story.baseline='original';render();});$('latest').addEventListener('click',()=>{story.baseline='latest';render();});
 $('about').addEventListener('click',()=>$('about-dialog').showModal());$('close-about').addEventListener('click',()=>$('about-dialog').close());
 $('about-dialog').addEventListener('click',event=>{if(event.target===$('about-dialog')){const r=$('about-dialog').getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)$('about-dialog').close();}});
-function receiptPNG(){
- const lines=[['BEYOND ETA',46],['JOURNEY RECORD / #001',26],['',20],['One delivery. More than one account.',26],['-----------------------------------------',25],['FIRST ESTIMATE                     20 min',27],['REVISED ESTIMATE                   26 min',27],['ACTUAL JOURNEY                     26 min',32],['-----------------------------------------',25],['THE JUDGEMENT',29],['Against revised estimate: ON TIME',27],['Against first estimate: 6 MINUTES LATE',27],['',12],[`Viewer selected: ${story.baseline==='original'?'first estimate':'revised estimate'}`,25],['-----------------------------------------',25],['THE WORK',29],['Riding                            20 min',27],['Waiting for food                   4 min',27],['Safety stop                        2 min',27],['',12],['THE ENCOUNTERS',29],['In rain                            6 min',27],['In traffic                         6 min',27],['',12],['Rain and traffic overlap riding time.',24],['They are not extra minutes.',24],['-----------------------------------------',25],['The judgement changed.',30],['The journey did not.',30],['',12],['Scripted artwork. Illustrative model.',23],['No pay, penalties or sensors involved.',23]];
- const canvas=document.createElement('canvas');canvas.width=900;canvas.height=lines.reduce((sum,[,size])=>sum+size*1.7,100);const ctx=canvas.getContext('2d');ctx.fillStyle='#f6f3e9';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#171917';let y=56;
- for(const [text,size] of lines){ctx.font=`${size>=29?'bold ':''}${size}px "Courier New",monospace`;ctx.textBaseline='top';ctx.fillText(text,50,y);y+=size*1.7;}
- return canvas.toDataURL('image/png');
-}
-$('issue-record').addEventListener('click',()=>{if(!story.finished)return;$('receipt-selected').textContent=`Viewer selected: ${story.baseline==='original'?'first estimate':'revised estimate'}.`;$('receipt-download').href=receiptPNG();$('receipt-panel').hidden=false;$('receipt-panel').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});});
-$('receipt-print').addEventListener('click',()=>window.print());
+let receiptBaseline='latest';
+let receiptPDFUrl;
+$('issue-record').addEventListener('click',()=>{
+ if(!story.finished)return;
+ receiptBaseline=story.baseline;
+ $('receipt-paper').innerHTML=receiptHTML(receiptBaseline);
+ $('receipt-download').href=receiptPNG(receiptBaseline);
+ if(receiptPDFUrl)URL.revokeObjectURL(receiptPDFUrl);
+ receiptPDFUrl=URL.createObjectURL(receiptPDF(receiptBaseline).output('blob'));
+ $('receipt-pdf').href=receiptPDFUrl;
+ $('receipt-panel').hidden=false;
+ $('receipt-panel').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+});
+$('receipt-print').addEventListener('click',()=>{
+ $('receipt-print-help').hidden=false;
+ try{window.print();}catch{ /* The PDF link remains available in embedded browsers. */ }
+});
 $('receipt-close').addEventListener('click',()=>{$('receipt-panel').hidden=true;document.querySelector('.story-caption').scrollIntoView({block:'center'});$('issue-record').focus();});
 render();

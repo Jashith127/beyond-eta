@@ -16,7 +16,7 @@ At the end, choosing the first or latest estimate changes the verdict from six m
 2. NEXT moves through assignment, restaurant waiting, rain, traffic, a safety stop and completion.
 3. At rain, press EXPOSE to uncover the model before continuing. The same control works in every chapter; CONCEAL returns to the customer interface.
 4. At completion, use Judge against first / Judge against latest. Compare the changed verdict with the unchanged meter.
-5. Issue thermal receipt creates a readable counter-record. Print receipt opens the browser print dialog; Download PNG saves the same record as an image.
+5. Issue thermal receipt creates a readable counter-record. Save PDF to print downloads a print-ready receipt; Print requests the browser dialog, with a visible PDF fallback for embedded browsers. Save image exports a PNG.
 6. REPLAY or RESET returns to the beginning. On mobile, fixed Expose / Next controls remain available while viewing either object.
 
 No automatic advancing timer, login, real order, GPS, sensors, backend or personal-data storage. All times and personal situations are scripted.
@@ -33,7 +33,7 @@ The final classifications are mathematical comparisons against a chosen baseline
 
 The receipt includes first/revised/actual times, both judgements, the viewer's selected reference at issue time, the work breakdown and overlapping exposures. It is a fixed record of the issued state. No money or fare is fabricated.
 
-The on-screen receipt uses 14px black monospaced type on off-white paper. The PNG is rendered at 900px width with large type. Print CSS targets an 80mm roll with a 72mm content area and 9–12pt body/summary text. Browser and printer settings control the physical result; choose the corresponding paper width and disable browser headers/footers if necessary. Printing does not connect directly to a hardware meter or printer. A PDF can be saved from the print dialog.
+The screen, PNG and vector PDF use one shared receipt layout. Labels and values are independently aligned. The PDF is a single 80mm-wide page and does not depend on the browser print dialog. The screen includes a paper-feed reveal, with reduced-motion support. Printing still requires opening the file in a PDF viewer and choosing a printer; the artwork does not connect directly to printer hardware.
 
 ## Run locally
 
@@ -63,8 +63,9 @@ git push origin main
 
 - `src/exposure-story.js`: scripted states, exposure gate, baseline comparison and reset
 - `src/exposure-story.test.js`: state-transition and arithmetic invariants
-- `src/exhibition.js`: device interaction, receipt creation and PNG export
+- `src/exhibition.js`: device interaction and receipt issuance
 - `src/exhibition.css`, `src/exhibition-compact.css`: gallery composition, hardware, phone and responsive controls
+- `src/receipt.js`: shared receipt content, PNG and PDF export
 - `src/receipt-paper.css`: readable thermal paper and print layout
 - `src/segments.js`, `src/icons.js`: locally rendered display and condition symbols
 
